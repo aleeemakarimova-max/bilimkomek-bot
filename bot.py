@@ -4,6 +4,10 @@ from telebot import types
 TOKEN = "8604417571:AAG0xq-2E-yPdV9Vwvutlz1MmNCvDizqYUo"
 bot = telebot.TeleBot(TOKEN)
 
+# --- DATA ---
+user_test = {}
+test_mode = {}
+
 # --- START ---
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -35,10 +39,12 @@ def subjects(message):
 # --- BACK ---
 @bot.message_handler(func=lambda message: message.text == "🔙 Артқа")
 def back(message):
+    if message.chat.id in test_mode:
+        del test_mode[message.chat.id]
     show_menu(message)
 
 # --- SUBJECT INFO ---
-@bot.message_handler(func=lambda message: message.text in ["Орыс тілі","Қазақ тілі","Математика","Физика","География","Биология","Ағылшын"] and message.chat.id not in user_test)
+@bot.message_handler(func=lambda message: message.text in ["Орыс тілі","Қазақ тілі","Математика","Физика","География","Биология","Ағылшын"] and message.chat.id not in test_mode)
 def subject_info(message):
     answers = {
         "Орыс тілі": "Орыс тілі — грамматика, сөздік қор және дұрыс жазу ережелерін үйретеді.",
@@ -52,16 +58,16 @@ def subject_info(message):
     bot.send_message(message.chat.id, answers[message.text])
 
 # =======================
-# 🔥 ТЕСТ БЛОГЫ
+# 🔥 ТЕСТ
 # =======================
-
-user_test = {}
 
 @bot.message_handler(func=lambda message: message.text == "🧠 Тест")
 def test(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    test_mode[message.chat.id] = True  # включаем режим теста
 
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     subjects = ["Математика", "Физика", "Биология", "География", "Қазақ тілі"]
+
     for sub in subjects:
         markup.add(sub)
 
@@ -113,8 +119,10 @@ questions = {
 
 @bot.message_handler(func=lambda message: message.text in questions.keys())
 def start_test(message):
-    user_test[message.chat.id] = {"subject": message.text, "q": 0, "score": 0}
-    ask_question(message)
+    if message.chat.id in test_mode:
+        user_test[message.chat.id] = {"subject": message.text, "q": 0, "score": 0}
+        del test_mode[message.chat.id]
+        ask_question(message)
 
 def ask_question(message):
     data = user_test[message.chat.id]
