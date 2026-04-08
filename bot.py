@@ -38,7 +38,7 @@ def back(message):
     show_menu(message)
 
 # --- SUBJECT INFO ---
-@bot.message_handler(func=lambda message: message.text in ["Орыс тілі","Қазақ тілі","Математика","Физика","География","Биология","Ағылшын"])
+@bot.message_handler(func=lambda message: message.text in ["Орыс тілі","Қазақ тілі","Математика","Физика","География","Биология","Ағылшын"] and message.chat.id not in user_test)
 def subject_info(message):
     answers = {
         "Орыс тілі": "Орыс тілі — грамматика, сөздік қор және дұрыс жазу ережелерін үйретеді.",
